@@ -5,7 +5,7 @@ using System.Collections.Generic;
 
 public class GameConfiguration : MonoBehaviour {
 
-	Dictionary<string, int> config = new Dictionary<string, int>{{"width", 5}, {"height", 5}};
+	Dictionary<string, int> config = new Dictionary<string, int>{{"width_value", 5}, {"height_value", 5}};
 	void ValueChangeHandler(string field, int value)
 	{
 		if (!config.ContainsKey(field))

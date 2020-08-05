@@ -10,10 +10,8 @@ public class ValueField : MonoBehaviour
     public void ValueChanged()
     {
         var value = GetValue();
-        OnValueChanged(name, value);
+        OnValueChanged(tag, value);
     }
-
-    public void ChangeValue(string _name, int value) => SetValue(_name, value);
 
     private int GetValue()
     {
@@ -28,12 +26,13 @@ public class ValueField : MonoBehaviour
 
     private void SetValue(string _name, int value)
     {
-        
+        if (!CompareTag(_name))
+            return;
         if (GetComponent<InputField>() != null)
-            value = Convert.ToInt32(GetComponent<InputField>().text);
-        
+            GetComponent<InputField>().text = value.ToString();
+
         if (GetComponent<Slider>() != null)
-            value = (int)GetComponent<Slider>().value;
+            GetComponent<Slider>().value = value;
     }
     
     private void OnEnable()
