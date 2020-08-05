@@ -7,10 +7,8 @@
       <e p="Assembly-CSharp.csproj" t="IncludeRecursive" />
       <e p="Assets\Scripts" t="Include">
         <e p="Buttons" t="Include">
-          <e p="ExitGameButton.cs" t="Include" />
           <e p="IButton.cs" t="Include" />
           <e p="MainMenuButton.cs" t="Include" />
-          <e p="NewGameButton.cs" t="Include" />
         </e>
         <e p="ContentManager.cs" t="Include" />
       </e>
