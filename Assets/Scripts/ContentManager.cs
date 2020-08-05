@@ -17,15 +17,6 @@ public class ContentManager : MonoBehaviour
     [SerializeField]
     private GameObject button_field;
 
-    private void OnEnable()
-    {
-        MainMenuButton.OnPressed += ButtonHandler;
-    }
-
-    private void OnDisable()
-    {
-        MainMenuButton.OnPressed -= ButtonHandler;
-    }
     void ButtonHandler(string button_name)
     {
         switch (button_name)
@@ -48,5 +39,16 @@ public class ContentManager : MonoBehaviour
         rect.anchoredPosition = Vector2.zero;
         button_field.SetActive(false);
         game_field.SetActive(true);
+    }
+    
+    
+    private void OnEnable()
+    {
+        MainMenuButton.OnPressed += ButtonHandler;
+    }
+
+    private void OnDisable()
+    {
+        MainMenuButton.OnPressed -= ButtonHandler;
     }
 }

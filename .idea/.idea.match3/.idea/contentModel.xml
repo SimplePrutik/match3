@@ -11,6 +11,8 @@
           <e p="MainMenuButton.cs" t="Include" />
         </e>
         <e p="ContentManager.cs" t="Include" />
+        <e p="GameConfiguration.cs" t="Include" />
+        <e p="ValueField.cs" t="Include" />
       </e>
       <e p="match3.sln" t="IncludeFlat" />
       <e p="obj" t="ExcludeRecursive" />
