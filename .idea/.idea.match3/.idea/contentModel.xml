@@ -1,0 +1,23 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project version="4">
+  <component name="ContentModelStore">
+    <e p="C:\Users\dimod\.Rider2019.3\system\extResources" t="IncludeRecursive" />
+    <e p="C:\Users\dimod\.Rider2019.3\system\resharper-host\local\Transient\ReSharperHost\v193\SolutionCaches\_match3.252831066.00" t="ExcludeRecursive" />
+    <e p="C:\Users\dimod\Desktop\match3\match3" t="IncludeRecursive">
+      <e p="Assembly-CSharp.csproj" t="IncludeRecursive" />
+      <e p="Assets\Scripts" t="Include">
+        <e p="Buttons" t="Include">
+          <e p="ExitGameButton.cs" t="Include" />
+          <e p="IButton.cs" t="Include" />
+          <e p="MainMenuButton.cs" t="Include" />
+          <e p="NewGameButton.cs" t="Include" />
+        </e>
+        <e p="ContentManager.cs" t="Include" />
+      </e>
+      <e p="match3.sln" t="IncludeFlat" />
+      <e p="obj" t="ExcludeRecursive" />
+      <e p="packages" t="ExcludeRecursive" />
+      <e p="Temp\bin" t="ExcludeRecursive" />
+    </e>
+  </component>
+</project>
