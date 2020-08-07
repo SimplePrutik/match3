@@ -1,6 +1,7 @@
 ﻿using System;
 using UnityEngine;
 using System.Collections;
+using System.Collections.Generic;
 using UnityEngine.UI;
 
 public class ContentManager : MonoBehaviour
@@ -12,17 +13,20 @@ public class ContentManager : MonoBehaviour
 
     private float game_width = 560f;
 
+
+    
     [SerializeField]
-    private GameObject game_field;
-    [SerializeField]
-    private GameObject button_field;
+    private List<Field> fields;
 
     void ButtonHandler(string button_name)
     {
         switch (button_name)
         {
-            case "new_game":
+            case "start_game":
                 StartGame();
+                break;
+            case "new_game":
+                GameConfig();
                 break;
             case "exit":
                 Application.Quit();
@@ -30,6 +34,23 @@ public class ContentManager : MonoBehaviour
         }
     }
 
+    GameObject GetField(string field)
+    {
+        return fields.Find(x => x.field_name == field)?.gameObject;
+    }
+
+    /// <summary>
+    /// Transition to config menu
+    /// </summary>
+    void GameConfig()
+    {
+        GetField("menu_field")?.SetActive(false);
+        GetField("config_field")?.SetActive(true);
+    }
+    
+    /// <summary>
+    /// Start of the game after setting up config
+    /// </summary>
     void StartGame()
     {
         rect.anchorMax = new Vector2(0.5f, 1f);
@@ -37,8 +58,15 @@ public class ContentManager : MonoBehaviour
         rect.offsetMax = new Vector2(game_width, 0);
         rect.offsetMin = new Vector2(0, 0);
         rect.anchoredPosition = Vector2.zero;
-        button_field.SetActive(false);
-        game_field.SetActive(true);
+        var cfg_field = GetField("config_field");
+        var gm_field = GetField("game_field");
+        if (cfg_field != null && gm_field != null)
+        {
+            cfg_field.SetActive(false);
+            gm_field.SetActive(true);
+            // cfg_field.GetComponent<>()
+        }
+        
     }
     
     

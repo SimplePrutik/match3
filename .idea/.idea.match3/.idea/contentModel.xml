@@ -11,9 +11,25 @@
             <e p="IButton.cs" t="Include" />
             <e p="MainMenuButton.cs" t="Include" />
           </e>
+          <e p="Config" t="Include">
+            <e p="ConfigItem" t="Include">
+              <e p="IConfigItem.cs" t="Include" />
+              <e p="SliderSyncConfigItem.cs" t="Include" />
+              <e p="SyncConfigItem.cs" t="Include" />
+              <e p="TextBoxSyncConfigItem.cs" t="Include" />
+            </e>
+            <e p="GameConfiguration.cs" t="Include" />
+          </e>
           <e p="ContentManager.cs" t="Include" />
-          <e p="GameConfiguration.cs" t="Include" />
-          <e p="ValueField.cs" t="Include" />
+          <e p="GameLogic" t="Include">
+            <e p="ColoredGem.cs" t="Include" />
+            <e p="Fields" t="Include">
+              <e p="ConfigField.cs" t="Include" />
+              <e p="Field.cs" t="Include" />
+              <e p="GameField.cs" t="Include" />
+            </e>
+            <e p="Gem.cs" t="Include" />
+          </e>
         </e>
       </e>
       <e p="match3.sln" t="IncludeFlat" />
