@@ -5,10 +5,36 @@ using UnityEngine;
 public class GameField : Field
 {
     private List<int> field;
-    private int _rows;
-    private int _cols;
+    private int _rows = 7;
+    private int _cols = 7;
     private int color_amount = 4;
     private int winning_line = 3;
+
+    public GameObject square_proto;
+    
+    private List<List<int>> presets = new List<List<int>>
+    {
+        new List<int>
+        {
+            2, 2, 1, 2, 3, 0, 3, 
+            0, 2, 2, 0, 0, 2, 3, 
+            1, 1, 0, 1, 1, 3, 1, 
+            3, 1, 3, 0, 1, 3, 0, 
+            3, 3, 0, 2, 0, 2, 2, 
+            2, 1, 1, 0, 0, 1, 0, 
+            3, 1, 1, 3, 3, 1, 1,
+        },
+        new List<int>
+        {
+            2, 3, 0, 3, 1, 0, 1, 
+            0, 0, 1, 0, 3, 0, 0, 
+            1, 2, 0, 2, 0, 1, 3, 
+            0, 0, 2, 1, 2, 0, 3, 
+            3, 3, 2, 2, 0, 1, 2, 
+            1, 3, 1, 0, 1, 2, 1, 
+            1, 1, 0, 3, 0, 0, 3,
+        }
+    };
 
 
     /// <summary>
@@ -32,10 +58,10 @@ public class GameField : Field
     /// </summary>
     public void CreateField()
     {
-        _rows = GameConfiguration.Config().GetConfig<int>("height_value");
-        _cols = GameConfiguration.Config().GetConfig<int>("width_value");
         field = GenerateField();
-
+        for (int i = 0; i < field.Count; ++i)
+            Instantiate(square_proto, transform);
+        Destroy(square_proto);
     }
 
     /// <summary>
@@ -44,34 +70,17 @@ public class GameField : Field
     /// <returns></returns>
     List<int> GenerateField()
     {
-        var _arr = new List<int>();
-        var _win = false;
-        var field_size = _rows * _cols;
-        while (!_win && Time.realtimeSinceStartup < 60)
-        {
-            _arr = new List<int>();
-            for (int i = 0; i < field_size; ++i)
-                _arr.Add(Random.Range(0, color_amount));
-            for (int i = 0; i < field_size; ++i)
-                for (int j = 0; j < field_size; ++j)
-                    if (WinnableElems(Swap(_arr, i, j)).Any(x => x)
-                    && !WinnableElems(_arr).Any(x => x))
-                        _win = true;
-        }
-
-        string message = "";
-        for (int i = 0; i < _rows; ++i)
-        {
-            for (int j = 0; j < _cols; ++j)
-                message += _arr[i * _rows + j] + " ";
-            message += "\n";
-        }
-        Debug.Log(message);
+        //choosing random preset
+        var _arr = new List<int>(presets[Random.Range(0, presets.Count)]);
+        //random color shift
+        var _shift = Random.Range(0, color_amount);
+        for (int i = 0; i < _arr.Count; ++i)
+            _arr[i] = (_arr[i] + _shift) % color_amount;
+        //reverse
+        if (Random.value > 0.5f) _arr.Reverse();
         return _arr;
     }
     
-    
-
     /// <summary>
     /// Returns array of booleans (true: part of winning lane) of current field 
     /// </summary>

@@ -13,10 +13,9 @@
           </e>
           <e p="Config" t="Include">
             <e p="ConfigItem" t="Include">
+              <e p="ConfigItem.cs" t="Include" />
               <e p="IConfigItem.cs" t="Include" />
-              <e p="SliderSyncConfigItem.cs" t="Include" />
-              <e p="SyncConfigItem.cs" t="Include" />
-              <e p="TextBoxSyncConfigItem.cs" t="Include" />
+              <e p="SliderConfigItem.cs" t="Include" />
             </e>
             <e p="GameConfiguration.cs" t="Include" />
           </e>

@@ -11,7 +11,7 @@ public class ContentManager : MonoBehaviour
         get { return GetComponent<RectTransform>(); }
     }
 
-    private float game_width = 560f;
+    private float game_width = 760f;
 
 
     
@@ -22,11 +22,8 @@ public class ContentManager : MonoBehaviour
     {
         switch (button_name)
         {
-            case "start_game":
-                StartGame();
-                break;
             case "new_game":
-                GameConfig();
+                StartGame();
                 break;
             case "exit":
                 Application.Quit();
@@ -40,16 +37,7 @@ public class ContentManager : MonoBehaviour
     }
 
     /// <summary>
-    /// Transition to config menu
-    /// </summary>
-    void GameConfig()
-    {
-        GetField("menu_field")?.SetActive(false);
-        GetField("config_field")?.SetActive(true);
-    }
-    
-    /// <summary>
-    /// Start of the game after setting up config
+    /// Transition to game scene
     /// </summary>
     void StartGame()
     {
@@ -58,7 +46,7 @@ public class ContentManager : MonoBehaviour
         rect.offsetMax = new Vector2(game_width, 0);
         rect.offsetMin = new Vector2(0, 0);
         rect.anchoredPosition = Vector2.zero;
-        GetField("config_field").SetActive(false);
+        GetField("menu_field").SetActive(false);
         GetField("game_field").SetActive(true);
         GetField("game_field").GetComponent<GameField>().CreateField();
     }
