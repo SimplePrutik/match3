@@ -14,12 +14,24 @@ public class GameConfiguration
 	
 	public Action<string, object> OnConfigChanged = delegate(string field, object value) {  };
 
-	public object GetConfig(string field)
+	/// <summary>
+	/// Get config data
+	/// </summary>
+	/// <param name="field"></param>
+	/// <typeparam name="T"></typeparam>
+	/// <returns></returns>
+	public T GetConfig<T>(string field)
 	{
-		return _data.ContainsKey(field) ? _data[field] : null;
+		return _data.ContainsKey(field) ? (T)_data[field] : default(T);
 	}
 
-	public void SetConfig(string field, object value)
+	/// <summary>
+	/// Set config data and send it to syncing listeners
+	/// </summary>
+	/// <param name="field"></param>
+	/// <param name="value"></param>
+	/// <typeparam name="T"></typeparam>
+	public void SetConfig<T>(string field, T value)
 	{
 		OnConfigChanged(field, value);
 		if (_data.ContainsKey(field))

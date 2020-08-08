@@ -8,7 +8,7 @@ public class SliderSyncConfigItem : SyncConfigItem
     
     public override void SetConfigValue()
     {
-        GameConfiguration.Config().SetConfig(tag, Slider.value);
+        GameConfiguration.Config().SetConfig(tag, (int)Slider.value);
     }
 
     protected override void SyncValue(string field, object value)

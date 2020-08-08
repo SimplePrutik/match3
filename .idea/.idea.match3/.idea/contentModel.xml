@@ -24,7 +24,6 @@
           <e p="GameLogic" t="Include">
             <e p="ColoredGem.cs" t="Include" />
             <e p="Fields" t="Include">
-              <e p="ConfigField.cs" t="Include" />
               <e p="Field.cs" t="Include" />
               <e p="GameField.cs" t="Include" />
             </e>

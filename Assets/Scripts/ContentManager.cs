@@ -58,15 +58,9 @@ public class ContentManager : MonoBehaviour
         rect.offsetMax = new Vector2(game_width, 0);
         rect.offsetMin = new Vector2(0, 0);
         rect.anchoredPosition = Vector2.zero;
-        var cfg_field = GetField("config_field");
-        var gm_field = GetField("game_field");
-        if (cfg_field != null && gm_field != null)
-        {
-            cfg_field.SetActive(false);
-            gm_field.SetActive(true);
-            // cfg_field.GetComponent<>()
-        }
-        
+        GetField("config_field").SetActive(false);
+        GetField("game_field").SetActive(true);
+        GetField("game_field").GetComponent<GameField>().CreateField();
     }
     
     

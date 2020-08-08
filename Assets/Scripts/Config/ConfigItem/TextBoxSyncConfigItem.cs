@@ -8,7 +8,7 @@ public class TextBoxSyncConfigItem : SyncConfigItem
     
     public override void SetConfigValue()
     {
-        GameConfiguration.Config().SetConfig(tag, Input.text);
+        GameConfiguration.Config().SetConfig(tag, Convert.ToInt32(Input.text));
     }
 
     protected override void SyncValue(string field, object value)
