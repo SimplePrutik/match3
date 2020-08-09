@@ -1,6 +1,8 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
 using System.Linq;
 using UnityEngine;
+using Random = UnityEngine.Random;
 
 public class GameField : Field
 {
@@ -10,7 +12,9 @@ public class GameField : Field
     private int color_amount = 4;
     private int winning_line = 3;
 
-    public GameObject square_proto;
+    private float square_size = 0.703f;
+
+    public GameObject gem_proto;
     
     private List<List<int>> presets = new List<List<int>>
     {
@@ -37,6 +41,11 @@ public class GameField : Field
     };
 
 
+    private void Awake()
+    {
+        CreateField();
+    }
+
     /// <summary>
     /// Changes color of gem
     /// </summary>
@@ -60,8 +69,12 @@ public class GameField : Field
     {
         field = GenerateField();
         for (int i = 0; i < field.Count; ++i)
-            Instantiate(square_proto, transform);
-        Destroy(square_proto);
+        {
+            var gem = Instantiate(gem_proto, transform);
+            gem.transform.localPosition = new Vector3(i % _cols * square_size, -i / _cols * square_size, ColoredGem.idle_z);
+            gem.GetComponent<ColoredGem>().SetColor(field[i]);
+        }
+        Destroy(gem_proto);
     }
 
     /// <summary>
