@@ -26,8 +26,6 @@
               <e p="Field.cs" t="Include" />
               <e p="GameField.cs" t="Include" />
             </e>
-            <e p="Gem.cs" t="Include" />
-            <e p="Square.cs" t="Include" />
           </e>
         </e>
       </e>

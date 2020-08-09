@@ -7,10 +7,13 @@ using Random = UnityEngine.Random;
 public class GameField : Field
 {
     private List<int> field;
+    private List<GameObject> gem_field;
     private int _rows = 7;
     private int _cols = 7;
     private int color_amount = 4;
     private int winning_line = 3;
+    private int combo_line = 4;
+    private bool gr_down = true;
 
     private float square_size = 0.703f;
 
@@ -44,23 +47,65 @@ public class GameField : Field
     private void Awake()
     {
         CreateField();
+        MakeMove(31, 32);
     }
 
-    /// <summary>
-    /// Changes color of gem
-    /// </summary>
-    /// <param name="pos"></param>
-    /// <param name="color"></param>
-    public void Change(int pos, int color)
+    void MakeMove(int p1, int p2)
     {
-        if (field.Count <= pos || pos < 0)
-        {
-            Debug.LogWarning("Incorrect change field values");
-            return;
-        }
+        field = Swap(field, p1, p2);
+        var _field = new List<int>(field);
+        if (!gr_down)
+            _field.Reverse();
+        var win_check = WinnableElems(_field);
+        // while (win_check.Any(x => x != 0))
+        // {
+            for (int i = _field.Count-1; i >= 0; --i)
+            {
+                
+                
+                string message = "";
+                for (int j = 0; j < 7; ++j)
+                {
+                    message += "\n";
+                    for (int k = 0; k < 7; ++k)
+                        message += _field[j * 7 + k] + " ";
+                }
+                Debug.Log(message);
+                
+                var new_index = NewPosition(i, win_check);
+                if (new_index == -1)
+                {
+                    _field[i] = -1;
+                    gem_field[i].GetComponent<Gem>().Explode();
+                    continue;
+                }
 
-        field[pos] = color;
+                if (new_index != i)
+                {
+                    win_check[new_index] = win_check[i];
+                    win_check[i] = 99;
+                    _field[new_index] = _field[i];
+                    _field[i] = -1;
+                }
+                
+            }
+        // }
     }
+
+    int NewPosition(int p, List<int> curField)
+    {
+        if (curField[p] >= 0 && curField[p] < 100)
+            return -1;
+        var newPos = p;
+        var iter = newPos + _cols;
+        while (iter < curField.Count && curField[iter] >= 0 && curField[iter] < 100)
+        {
+            newPos = iter;
+            iter += _cols;
+        }
+        return newPos;
+    }
+
 
     /// <summary>
     /// Initial spawn
@@ -68,14 +113,25 @@ public class GameField : Field
     public void CreateField()
     {
         field = GenerateField();
+        gem_field = new List<GameObject>();
         for (int i = 0; i < field.Count; ++i)
         {
             var gem = Instantiate(gem_proto, transform);
-            gem.transform.localPosition = new Vector3(i % _cols * square_size, -i / _cols * square_size, ColoredGem.idle_z);
-            gem.GetComponent<ColoredGem>().SetColor(field[i]);
+            gem.transform.localPosition = GetPosition(i);
+            var _gem = gem.GetComponent<Gem>();
+            _gem.Move(GetPosition(i), i);
+            _gem.SetColor(field[i]);
+            gem_field.Add(gem);
         }
         Destroy(gem_proto);
     }
+
+    /// <summary>
+    /// Get coordinates for gem movement
+    /// </summary>
+    /// <param name="i"></param>
+    /// <returns></returns>
+    Vector3 GetPosition(int i) => new Vector3(i % _cols * square_size, -i / _cols * square_size, -2);
 
     /// <summary>
     /// Initial field generation
@@ -83,6 +139,7 @@ public class GameField : Field
     /// <returns></returns>
     List<int> GenerateField()
     {
+        return presets[0];
         //choosing random preset
         var _arr = new List<int>(presets[Random.Range(0, presets.Count)]);
         //random color shift
@@ -98,25 +155,25 @@ public class GameField : Field
     /// Returns array of booleans (true: part of winning lane) of current field 
     /// </summary>
     /// <returns></returns>
-    List<bool> WinnableElems(List<int> game_field)
+    List<int> WinnableElems(List<int> game_field)
     {
         //Row wins
         var rows = game_field.Select((x, i) => new {value = x, index = i})
             .GroupBy(x => x.index / (game_field.Count / this._rows))
-            .Select(x => IsWinningLine(x.Select(z => z.value).ToList()))
+            .Select(x => FindStreakLines(x.Select(z => z.value).ToList()))
             .ToList().SelectMany(x => x).ToList();
         
         //Column wins
         var cols = game_field.Select((x, i) => new {value = x, index = i})
             .GroupBy(x => x.index % _cols)
-            .Select(x => IsWinningLine(x.Select(z => z.value).ToList()))
+            .Select(x => FindStreakLines(x.Select(z => z.value).ToList()))
             .ToList();
 
-        var transp_cols = new List<List<bool>>();
+        var transpCols = new List<List<int>>();
         for (int i = 0; i < this._rows; ++i)
-            transp_cols.Add(cols.Select(x => x[i]).ToList());
+            transpCols.Add(cols.Select(x => x[i]).ToList());
         
-        return rows.Zip(transp_cols.SelectMany(x => x).ToList(), (f,s) => f || s).ToList();
+        return rows.Zip(transpCols.SelectMany(x => x).ToList(), Mathf.Max).ToList();
     }
 
     /// <summary>
@@ -128,7 +185,7 @@ public class GameField : Field
     bool IsSwappable(int g1, int g2)
     {
         var _arr = Swap(field, g1, g2);
-        return IsAbleToSwap(g1,g2) && WinnableElems(_arr).Any(x => x);
+        return IsAbleToSwap(g1,g2) && WinnableElems(_arr).Any(x => x != -1);
     }
 
     /// <summary>
@@ -176,30 +233,36 @@ public class GameField : Field
     bool AbsOne(int i1, int i2) => Mathf.Abs(i1 - i2) == 1; 
 
     /// <summary>
-    /// Checks if there is winning line in a row or column
+    /// Checks line for winning streak of gems
+    /// 0-4 => gem_line
+    /// -1 => no gem_line
+    /// 100-104 => supergem
     /// </summary>
     /// <param name="line"></param>
     /// <returns></returns>
-    List<bool> IsWinningLine(List<int> line)
+    List<int> FindStreakLines(List<int> line)
     {
         var _line = line;
-        var bool_line = new List<bool>();
+        var streakLine = new List<int>();
         var streak = 1;
-        var prev_number = -1;
+        var prevNumber = -1;
         for (int i = 0; i < _line.Count; ++i)
         {
-            streak = prev_number == _line[i] ? streak + 1 : 1;
+            var streakContinues = prevNumber == _line[i];
+            if (!streakContinues && streak >= combo_line)
+                streakLine[Random.Range(streakLine.Count - streak, streakLine.Count - 1)] += 100;
+            streak = prevNumber == _line[i] ? streak + 1 : 1;
             
             if (streak == winning_line)
             {
-                bool_line[i - 2] = true;
-                bool_line[i - 1] = true;
+                streakLine[i - 2] = _line[i];
+                streakLine[i - 1] = _line[i];
             }
 
-            bool_line.Add(streak >= winning_line);
+            streakLine.Add(streak >= winning_line ? _line[i] : -1);
 
-            prev_number = line[i];
+            prevNumber = line[i];
         }
-        return bool_line;
+        return streakLine;
     }
 }
