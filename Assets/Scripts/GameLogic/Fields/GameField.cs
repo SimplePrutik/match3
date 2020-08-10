@@ -47,31 +47,28 @@ public class GameField : Field
     private void Awake()
     {
         CreateField();
-        MakeMove(31, 32);
     }
 
-    void MakeMove(int p1, int p2)
+    private int draggedGem;
+    private int draggedToGem;
+
+    public void SetPositionOne(int pos) => draggedGem = pos;
+    public void SetPositionTwo(int pos) => draggedToGem = pos;
+
+    public void MakeMove()
     {
-        field = Swap(field, p1, p2);
+        SwapGems();
+        field = Swap(field, draggedGem, draggedToGem);
         var _field = new List<int>(field);
         if (!gr_down)
             _field.Reverse();
         var win_check = WinnableElems(_field);
-        // while (win_check.Any(x => x != 0))
-        // {
+        
+        while (win_check.Any(x => x != 0))
+        {
+            //
             for (int i = _field.Count-1; i >= 0; --i)
             {
-                
-                
-                string message = "";
-                for (int j = 0; j < 7; ++j)
-                {
-                    message += "\n";
-                    for (int k = 0; k < 7; ++k)
-                        message += _field[j * 7 + k] + " ";
-                }
-                Debug.Log(message);
-                
                 var new_index = NewPosition(i, win_check);
                 if (new_index == -1)
                 {
@@ -89,7 +86,7 @@ public class GameField : Field
                 }
                 
             }
-        // }
+        }
     }
 
     int NewPosition(int p, List<int> curField)
@@ -106,7 +103,7 @@ public class GameField : Field
         return newPos;
     }
 
-
+    
     /// <summary>
     /// Initial spawn
     /// </summary>
@@ -119,7 +116,7 @@ public class GameField : Field
             var gem = Instantiate(gem_proto, transform);
             gem.transform.localPosition = GetPosition(i);
             var _gem = gem.GetComponent<Gem>();
-            _gem.Move(GetPosition(i), i);
+            _gem.Init(i, this);
             _gem.SetColor(field[i]);
             gem_field.Add(gem);
         }
@@ -182,10 +179,10 @@ public class GameField : Field
     /// <param name="g1"></param>
     /// <param name="g2"></param>
     /// <returns></returns>
-    bool IsSwappable(int g1, int g2)
+    public bool IsSwappable(int g2)
     {
-        var _arr = Swap(field, g1, g2);
-        return IsAbleToSwap(g1,g2) && WinnableElems(_arr).Any(x => x != -1);
+        var _arr = Swap(field, draggedGem, g2);
+        return IsAbleToSwap(draggedGem,g2) && WinnableElems(_arr).Any(x => x != -1);
     }
 
     /// <summary>
@@ -210,6 +207,17 @@ public class GameField : Field
         _arr[i2] = _t;
         return _arr;
 
+    }
+
+    /// <summary>
+    /// Swap color of gems
+    /// </summary>
+    /// <param name="p2"></param>
+    void SwapGems()
+    {
+        var t = field[draggedGem];
+        gem_field[draggedGem].GetComponent<Gem>().SetColor(field[draggedToGem]);
+        gem_field[draggedToGem].GetComponent<Gem>().SetColor(t);
     }
     
     /// <summary>

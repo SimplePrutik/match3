@@ -11,8 +11,12 @@ public class Gem : MonoBehaviour
     
     public static bool IsDragged = false;
     public static bool LockedInteraction = false;
+    public static bool IsRightMove = false;
 
     private int current_square;
+    private Vector3 current_pos;
+
+    protected GameField game_manager;
 
     private float spawnY = 1.5f;
     
@@ -37,12 +41,28 @@ public class Gem : MonoBehaviour
     private float mZCoord;
 
     /// <summary>
+    /// Initialising position and game manager for checking game logic 
+    /// </summary>
+    /// <param name="pos"></param>
+    /// <param name="gf"></param>
+    public void Init(int pos, GameField gf)
+    {
+        game_manager = gf;
+        current_square = pos;
+        
+        current_pos = transform.localPosition;
+    }
+
+    /// <summary>
     /// Falling of gem and setting its position on field
     /// </summary>
     /// <param name="new_pos"></param>
-    public void Move(Vector3 new_pos, int pos)
+    public void Move(Vector3 new_pos, int pos, bool instantly = true)
     {
+        if (instantly)
+            transform.localPosition = new_pos;
         current_square = pos;
+        current_pos = new_pos;
     }
 
     /// <summary>
@@ -52,6 +72,8 @@ public class Gem : MonoBehaviour
     {
         
     }
+    
+    //MOUSE INTERACTION
 
     
 
@@ -63,7 +85,7 @@ public class Gem : MonoBehaviour
     }
     
     
-    void OnMouseDown()
+    private void OnMouseDown()
     {
         var position = gameObject.transform.position;
         mZCoord = Camera.main.WorldToScreenPoint(position).z;
@@ -72,14 +94,24 @@ public class Gem : MonoBehaviour
         highlight.enabled = false;
         transform.localScale = new Vector3(1.1f, 1.1f, 1);
         shift_drag = position - GetMouseAsWorldPoint() + Vector3.back;
+        game_manager.SetPositionOne(current_square);
     }
 
     private void OnMouseEnter()
     {
+        IsRightMove = false;
         highlight.enabled = true;
+        highlight.color = Color.white;
         if (IsDragged)
         {
-            highlight.color = IsDragged ? Color.magenta : Color.white;
+            if (game_manager.IsSwappable(current_square))
+            {
+                IsRightMove = true;
+                game_manager.SetPositionTwo(current_square);
+                highlight.color = Color.magenta;
+                return;
+            }
+            highlight.enabled = false;
         }
     }
     
@@ -90,7 +122,7 @@ public class Gem : MonoBehaviour
     }
 
 
-    void OnMouseDrag()
+    private void OnMouseDrag()
     {
         transform.position = GetMouseAsWorldPoint() + shift_drag;
     }
@@ -100,5 +132,9 @@ public class Gem : MonoBehaviour
         transform.localScale = new Vector3(1, 1, 1);
         GetComponent<BoxCollider>().enabled = true;
         IsDragged = false;
+        if (IsRightMove)
+            game_manager.MakeMove();
+
+        transform.localPosition = current_pos;
     }
 }
