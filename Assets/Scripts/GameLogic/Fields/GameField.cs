@@ -1,6 +1,8 @@
 ﻿using System;
+using System.Collections;
 using System.Collections.Generic;
 using System.Linq;
+using System.Threading;
 using UnityEngine;
 using Random = UnityEngine.Random;
 
@@ -55,7 +57,7 @@ public class GameField : Field
     public void SetPositionOne(int pos) => draggedGem = pos;
     public void SetPositionTwo(int pos) => draggedToGem = pos;
 
-    public void MakeMove()
+    public IEnumerator MakeMove()
     {
         SwapGems();
         field = Swap(field, draggedGem, draggedToGem);
@@ -64,16 +66,16 @@ public class GameField : Field
             _field.Reverse();
         var win_check = WinnableElems(_field);
         
-        while (win_check.Any(x => x != 0))
+        while (win_check.Any(x => x != -1))
         {
-            //
             for (int i = _field.Count-1; i >= 0; --i)
             {
                 var new_index = NewPosition(i, win_check);
+                var _gem = gem_field[i].GetComponent<Gem>();
                 if (new_index == -1)
                 {
                     _field[i] = -1;
-                    gem_field[i].GetComponent<Gem>().Explode();
+                    _gem.StartCoroutine(_gem.Explode());
                     continue;
                 }
 
@@ -83,10 +85,53 @@ public class GameField : Field
                     win_check[i] = 99;
                     _field[new_index] = _field[i];
                     _field[i] = -1;
+                    gem_field[new_index] = gem_field[i];
+                    gem_field[i] = null;
+                    _gem.StartCoroutine(_gem.Move(GetPosition(new_index), new_index, false));
                 }
                 
             }
+
+            for (int i = _field.Count - 1; i >= 0; --i)
+            {
+                if (_field[i] == -1)
+                {
+                    var new_gem = Random.Range(0, color_amount);
+                    _field[i] = new_gem;
+                    gem_field[i] = Instantiate(gem_proto, transform);
+                    var _gem = gem_field[i].GetComponent<Gem>();
+                    _gem.SetColor(new_gem);
+                    _gem.Init(new_gem, this);
+                    gem_field[i].transform.localPosition = GetPosition(i) + Vector3.up * (square_size * 10);
+                    _gem.StartCoroutine(_gem.Move(GetPosition(i), i, false));
+                }
+            }
+
+            var mes = "";
+            var gem_mes = "";
+            var t_mes = "";
+            var t = WinnableElems(_field);
+            for (int i = 0; i < 7; ++i)
+            {
+                mes += "\n";
+                gem_mes += "\n";
+                t_mes += "\n";
+                for (int j = 0; j < 7; ++j)
+                {
+                    mes += _field[i * 7 + j] + " ";
+                    gem_mes += gem_field[i * 7 + j].GetComponent<Gem>().curr_col + " ";
+                    t_mes += t[i * 7 + j] + " ";
+                }
+            }
+
+            Debug.Log(mes);
+            Debug.Log(gem_mes);
+            Debug.Log(t_mes);
+
+            win_check = WinnableElems(_field);
+            yield return new WaitForSeconds(2);
         }
+        field = new List<int>(_field);
     }
 
     int NewPosition(int p, List<int> curField)
@@ -120,7 +165,8 @@ public class GameField : Field
             _gem.SetColor(field[i]);
             gem_field.Add(gem);
         }
-        Destroy(gem_proto);
+
+        gem_proto.transform.localPosition += Vector3.down * 100;
     }
 
     /// <summary>
@@ -218,6 +264,7 @@ public class GameField : Field
         var t = field[draggedGem];
         gem_field[draggedGem].GetComponent<Gem>().SetColor(field[draggedToGem]);
         gem_field[draggedToGem].GetComponent<Gem>().SetColor(t);
+        Debug.Log("Swapped " + draggedGem + " and " + draggedToGem);
     }
     
     /// <summary>
