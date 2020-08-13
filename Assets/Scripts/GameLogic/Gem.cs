@@ -9,15 +9,17 @@ public class Gem : MonoBehaviour
 {
     private List<Color> gemColors = new List<Color>{Color.red, Color.green, Color.blue, Color.yellow};
 
+    //DELETE AFTER DEBUG
     public int curr_col;
     
     public static bool IsDragged = false;
     public static bool LockedInteraction = false;
     public static bool IsRightMove = false;
 
-    private int current_square;
+    //MAKE PRIVATE AFTER ALL
+    public int current_square;
     private Vector3 current_pos;
-    private bool special_gem => special.enabled;
+    public bool special_gem => special.enabled;
 
     protected GameField game_manager;
 
@@ -39,6 +41,11 @@ public class Gem : MonoBehaviour
 
         curr_col = _color;
         Gem.color = gemColors[_color];
+    }
+
+    public void SetArrow(bool arrowed)
+    {
+        special.enabled = arrowed;
     }
 
     private Vector3 shift_drag;
@@ -113,6 +120,8 @@ public class Gem : MonoBehaviour
     
     private void OnMouseDown()
     {
+        if (LockedInteraction)
+            return;
         var position = gameObject.transform.position;
         mZCoord = Camera.main.WorldToScreenPoint(position).z;
         IsDragged = true;
@@ -125,6 +134,8 @@ public class Gem : MonoBehaviour
 
     private void OnMouseEnter()
     {
+        if (LockedInteraction)
+            return;
         IsRightMove = false;
         highlight.enabled = true;
         highlight.color = Color.white;
@@ -150,17 +161,24 @@ public class Gem : MonoBehaviour
 
     private void OnMouseDrag()
     {
+        if (LockedInteraction)
+            return;
         transform.position = GetMouseAsWorldPoint() + shift_drag;
     }
 
     private void OnMouseUp()
     {
+        if (LockedInteraction)
+            return;
         transform.localPosition = current_pos;
         transform.localScale = new Vector3(1, 1, 1);
         GetComponent<BoxCollider>().enabled = true;
         IsDragged = false;
         if (IsRightMove)
+        {
+            LockedInteraction = true;
             game_manager.StartCoroutine(game_manager.MakeMove());
+        }
 
     }
 }

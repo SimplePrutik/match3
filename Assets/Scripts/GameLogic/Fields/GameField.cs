@@ -25,11 +25,11 @@ public class GameField : Field
     {
         new List<int>
         {
-            2, 2, 1, 2, 3, 0, 3, 
-            0, 2, 2, 0, 0, 2, 3, 
-            1, 1, 0, 1, 1, 3, 1, 
+            2, 2, 1, 2, 2, 0, 3, 
+            0, 2, 2, 0, 2, 2, 3, 
+            1, 1, 0, 1, 0, 3, 1, 
             3, 1, 3, 0, 1, 3, 0, 
-            3, 3, 0, 2, 0, 2, 2, 
+            3, 3, 2, 2, 0, 2, 2, 
             2, 1, 1, 0, 0, 1, 0, 
             3, 1, 1, 3, 3, 1, 1,
         },
@@ -62,16 +62,31 @@ public class GameField : Field
         SwapGems();
         field = Swap(field, draggedGem, draggedToGem);
         var _field = new List<int>(field);
-        if (!gr_down)
-            _field.Reverse();
         var win_check = WinnableElems(_field);
         
         while (win_check.Any(x => x != -1))
         {
+            var winlines = win_check.Select((x, i) => new {Value = x, Index = i})
+                .Where((arg => arg.Value != -1))
+                .Select(arg => arg.Index).ToList();
+            if (gem_field.Select((x, i) => new {Value = x, Index = i})
+                .Any((x) =>
+                    x.Value.GetComponent<Gem>().special_gem &&
+                    winlines.Any(y => y == x.Index)))
+                gr_down = !gr_down;
+
+            if (!gr_down)
+            {
+                _field.Reverse();
+                gem_field.Reverse();
+            }
+            win_check = WinnableElems(_field);
+            
             for (int i = _field.Count-1; i >= 0; --i)
             {
                 var new_index = NewPosition(i, win_check);
                 var _gem = gem_field[i].GetComponent<Gem>();
+                if (win_check[i] >= 100) _gem.SetArrow(true);
                 if (new_index == -1)
                 {
                     _field[i] = -1;
@@ -87,7 +102,8 @@ public class GameField : Field
                     _field[i] = -1;
                     gem_field[new_index] = gem_field[i];
                     gem_field[i] = null;
-                    _gem.StartCoroutine(_gem.Move(GetPosition(new_index), new_index, false));
+                    var _new_index = gr_down ? new_index : _field.Count - 1 - new_index;
+                    _gem.StartCoroutine(_gem.Move(GetPosition(_new_index), _new_index, false));
                 }
                 
             }
@@ -102,36 +118,43 @@ public class GameField : Field
                     var _gem = gem_field[i].GetComponent<Gem>();
                     _gem.SetColor(new_gem);
                     _gem.Init(new_gem, this);
-                    gem_field[i].transform.localPosition = GetPosition(i) + Vector3.up * (square_size * 10);
-                    _gem.StartCoroutine(_gem.Move(GetPosition(i), i, false));
+                    var _i = gr_down ? i : _field.Count - 1 - i;
+                    gem_field[i].transform.localPosition = GetPosition(_i) + Vector3.up * ((gr_down ? 1 : -1) * square_size * 10);
+                    _gem.StartCoroutine(_gem.Move(GetPosition(_i), _i, false));
                 }
             }
 
-            var mes = "";
-            var gem_mes = "";
-            var t_mes = "";
-            var t = WinnableElems(_field);
-            for (int i = 0; i < 7; ++i)
+            // var mes = "";
+            // var gem_mes = "";
+            // var t_mes = "";
+            // var t = WinnableElems(_field);
+            // for (int i = 0; i < 7; ++i)
+            // {
+            //     mes += "\n";
+            //     gem_mes += "\n";
+            //     t_mes += "\n";
+            //     for (int j = 0; j < 7; ++j)
+            //     {
+            //         mes += _field[i * 7 + j] + " ";
+            //         gem_mes += gem_field[i * 7 + j].GetComponent<Gem>().curr_col + " ";
+            //         t_mes += t[i * 7 + j] + " ";
+            //     }
+            // }
+            //
+            // Debug.Log(mes);
+            // Debug.Log(gem_mes);
+            // Debug.Log(t_mes);
+
+            if (!gr_down)
             {
-                mes += "\n";
-                gem_mes += "\n";
-                t_mes += "\n";
-                for (int j = 0; j < 7; ++j)
-                {
-                    mes += _field[i * 7 + j] + " ";
-                    gem_mes += gem_field[i * 7 + j].GetComponent<Gem>().curr_col + " ";
-                    t_mes += t[i * 7 + j] + " ";
-                }
+                _field.Reverse();
+                gem_field.Reverse();
             }
-
-            Debug.Log(mes);
-            Debug.Log(gem_mes);
-            Debug.Log(t_mes);
-
             win_check = WinnableElems(_field);
-            yield return new WaitForSeconds(2);
+            yield return new WaitForSeconds(4);
         }
         field = new List<int>(_field);
+        Gem.LockedInteraction = false;
     }
 
     int NewPosition(int p, List<int> curField)
@@ -262,8 +285,16 @@ public class GameField : Field
     void SwapGems()
     {
         var t = field[draggedGem];
-        gem_field[draggedGem].GetComponent<Gem>().SetColor(field[draggedToGem]);
-        gem_field[draggedToGem].GetComponent<Gem>().SetColor(t);
+        var _drGem = gem_field[draggedGem].GetComponent<Gem>();
+        var _drToGem = gem_field[draggedToGem].GetComponent<Gem>();
+        var arrow = _drGem.special_gem;
+        
+        _drGem.SetColor(field[draggedToGem]);
+        _drGem.SetArrow(_drToGem.special_gem);
+        
+        _drToGem.SetColor(t);
+        _drToGem.SetArrow(_drGem.special_gem);
+        
         Debug.Log("Swapped " + draggedGem + " and " + draggedToGem);
     }
     
@@ -304,9 +335,8 @@ public class GameField : Field
         for (int i = 0; i < _line.Count; ++i)
         {
             var streakContinues = prevNumber == _line[i];
-            if (!streakContinues && streak >= combo_line)
-                streakLine[Random.Range(streakLine.Count - streak, streakLine.Count - 1)] += 100;
-            streak = prevNumber == _line[i] ? streak + 1 : 1;
+            var special = streak >= combo_line && !streakContinues ? 1 : (streak >= combo_line - 1 && i == _line.Count - 1 && streakContinues ? 0 : -1);
+            streak = streakContinues ? streak + 1 : 1;
             
             if (streak == winning_line)
             {
@@ -316,6 +346,8 @@ public class GameField : Field
 
             streakLine.Add(streak >= winning_line ? _line[i] : -1);
 
+            if (special >= 0)
+                streakLine[Random.Range(streakLine.Count - streak - special, streakLine.Count - 1 - special)] += 100;
             prevNumber = line[i];
         }
         return streakLine;
